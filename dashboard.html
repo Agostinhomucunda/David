@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard - PayPay Ganha</title>
+</head>
+<body>
+    <div style="padding: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <img src="https://i.postimg.cc/G2K2SCFQ/C9541CCF_3AD6_4F7A_9CEA_33F2F300A8FB.jpg" class="logo-small">
+            <span id="user-name">Carregando...</span>
+        </div>
+        <button onclick="logout()" style="background:none; border:none; color:red;">Sair</button>
+    </div>
+
+    <div class="card">
+        <p style="color: var(--gray-text); margin: 0;">Saldo Total</p>
+        <h2 id="saldo-txt" style="margin: 5px 0;">0.00 Kz</h2>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Lucro: <b class="neon-text" id="lucro-txt">+0%</b></span>
+            <span>Pontos: <b id="pontos-txt">0</b></span>
+        </div>
+        <canvas id="lucroChart" height="100"></canvas>
+    </div>
+
+    <div style="width: 90%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn-primary" onclick="window.location.href='investir.html'">💸 INVESTIR</button>
+        <button class="btn-primary" onclick="window.location.href='videos.html'">🎥 PONTOS</button>
+        <button class="btn-primary" onclick="window.location.href='recargas.html'">📱 RECARGAS</button>
+        <button class="btn-primary" id="btn-invite">🤝 CONVIDAR</button>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        // Gráfico Simples
+        const ctx = document.getElementById('lucroChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['S1', 'S2', 'S3', 'S4'],
+                datasets: [{
+                    label: 'Crescimento',
+                    data: [0, 10, 25, 35],
+                    borderColor: '#39ff14',
+                    tension: 0.4
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+    </script>
+</body>
+</html>

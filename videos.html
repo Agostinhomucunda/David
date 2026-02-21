@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Ganhar Pontos - PayPay Ganha</title>
+</head>
+<body>
+    <div class="card">
+        <h3>Assistir e Ganhar</h3>
+        <p>Assista até o fim para ganhar <span class="neon-text">+25 pontos</span></p>
+        
+        <video id="reward-video" width="100%" controls style="border-radius: 10px;">
+            <source src="videos/promo1.mp4" type="video/mp4">
+            Seu navegador não suporta vídeos.
+        </video>
+
+        <button id="btn-claim" class="btn-primary" style="margin-top:15px; opacity: 0.5;" disabled>RESGATAR PONTOS</button>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./firebase.js";
+        import { doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const video = document.getElementById('reward-video');
+        const btn = document.getElementById('btn-claim');
+
+        // Ativa o botão apenas quando o vídeo termina
+        video.onended = () => {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        };
+
+        btn.onclick = async () => {
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            await updateDoc(userRef, {
+                pontos: increment(25)
+            });
+            alert("+25 pontos adicionados!");
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+        };
+    </script>
+</body>
+</html>

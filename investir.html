@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Investir - PayPay Ganha</title>
+    <style>
+        .method-card { border: 1px solid #333; padding: 15px; margin: 10px 0; border-radius: 10px; cursor: pointer; }
+        .method-card:hover { border-color: var(--neon-green); }
+        .hidden { display: none; }
+        #timer { font-size: 20px; font-weight: bold; color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Escolha o Método</h3>
+        
+        <div class="method-card" onclick="showPayment('paypay')">
+            <img src="https://i.postimg.cc/G2K2SCFQ/C9541CCF_3AD6_4F7A_9CEA_33F2F300A8FB.jpg" class="logo-small">
+            <span>Pagar com PayPay</span>
+        </div>
+
+        <div class="method-card" onclick="showPayment('express')">
+            <img src="https://i.postimg.cc/Ssdsth6d/17F7F1AF_08C0_4827_BF18_CC2A56B45F90.png" class="logo-small">
+            <span>Multicaixa Express</span>
+        </div>
+    </div>
+
+    <div id="payment-area" class="card hidden">
+        <h4 id="pay-title"></h4>
+        <div id="instructions"></div>
+        <hr>
+        <p>Tempo restante: <span id="timer">04:00</span></p>
+        
+        <input type="number" id="invest-amount" placeholder="Valor do Investimento (Kz)">
+        <label>Anexar Comprovante (Imagem/PDF):</label>
+        <input type="file" id="file-upload" accept="image/*,application/pdf">
+        
+        <button id="btn-enviar" class="btn-primary" style="margin-top:10px;">➡️ ENVIAR COMPROVANTE</button>
+    </div>
+
+    <script type="module">
+        import { auth, db, storage } from "./firebase.js";
+        import { ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { doc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let timeLeft = 240; // 4 minutos
+        let timerId;
+
+        window.showPayment = (type) => {
+            document.getElementById('payment-area').classList.remove('hidden');
+            const title = document.getElementById('pay-title');
+            const inst = document.getElementById('instructions');
+            
+            if(type === 'paypay') {
+                title.innerText = "Pagamento via PayPay";
+                inst.innerHTML = "Envie para: <b class='neon-text'>+244 951 875 350</b>";
+            } else {
+                title.innerText = "Multicaixa Express";
+                inst.innerHTML = "Entidade: <b>10116</b><br>Ref: <b>951875350</b>";
+            }
+            startTimer();
+        };
+
+        function startTimer() {
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                let min = Math.floor(timeLeft / 60);
+                let sec = timeLeft % 60;
+                document.getElementById('timer').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
+                if(timeLeft <= 0) clearInterval(timerId);
+                timeLeft--;
+            }, 1000);
+        }
+
+        document.getElementById('btn-enviar').onclick = async () => {
+            const val = parseFloat(document.getElementById('invest-amount').value);
+            const file = document.getElementById('file-upload').files[0];
+            
+            if(!val || !file) return alert("Preencha o valor e anexe o comprovante!");
+
+            const btn = document.getElementById('btn-enviar');
+            btn.innerText = "VERIFICANDO... (10s)";
+            btn.disabled = true;
+
+            // Upload para Storage
+            const storageRef = ref(storage, `comprovantes/${auth.currentUser.uid}_${Date.now()}`);
+            await uploadBytes(storageRef, file);
+
+            // Aguarda 10 segundos (Simulação de verificação rápida)
+            setTimeout(async () => {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                await updateDoc(userRef, {
+                    saldo: increment(val),
+                    valorInvestido: val,
+                    lucro: increment(val * 0.35),
+                    investimentoAtivo: true,
+                    dataInvestimento: serverTimestamp()
+                });
+
+                alert("Saldo liberado! O comprovante será verificado posteriormente. Caso seja falso, sua conta será bloqueada.");
+                window.location.href = "dashboard.html";
+            }, 10000);
+        };
+    </script>
+</body>
+</html>
